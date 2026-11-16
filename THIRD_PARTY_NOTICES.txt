@@ -1,0 +1,30 @@
+Third-party components used by No-Nonsense Photo Sorter
+
+FFmpeg and FFprobe
+  Pinned Windows build: 2026-10-29-git-31ba826726-essentials_build-www.gyan.dev
+  Build distributor: https://www.gyan.dev/ffmpeg/builds/
+  FFmpeg source revision: https://github.com/FFmpeg/FFmpeg/commit/31ba826726
+  The local build's README identifies GPL v3. The full build license is supplied
+  with the local FFmpeg package. The build script pins these SHA-256 values:
+    ffmpeg.exe  557e97af30a1c9b6dfbd08a1d2a04894279dd15a77d23b1723e560cc7f4fc90e
+    ffprobe.exe 11cb2352bac147bb8906f567af9af1da3779eca73e7a71a49a81c7d277e289cd
+
+ExifTool
+  Local Windows executable reports version 13.60.
+  Project and source: https://exiftool.org/
+  Windows distribution includes exiftool_files/Licenses_Strawberry_Perl.zip
+  and exiftool_files/LICENSE. The build script pins this SHA-256 value:
+    exiftool.exe 44b336d7596c3ec86577a5ff6d46e8388a56eb69a15f09987d4ac6cc3abbf75e
+
+OpenCV Zoo face models
+  Source revision: https://github.com/opencv/opencv_zoo/tree/48b10fa505aeb51fbd127fc60a5c660040e823b7
+  The app downloads the YuNet and SFace models from this revision and verifies
+  their hashes before use. Check the upstream model terms before redistribution.
+
+Fonts
+  Inter, Cinzel, and Cormorant Garamond are included under the SIL Open Font
+  License 1.1. Their license texts are in fonts/OFL-*.txt.
+
+Python dependencies
+  Exact direct versions are listed in requirements.txt. Their licenses and
+  transitive dependencies should be reviewed when distributing a binary build.

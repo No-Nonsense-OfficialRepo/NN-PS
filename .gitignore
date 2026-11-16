@@ -1,0 +1,41 @@
+# Local Python environments and generated files
+.buildenv/
+.testenv/
+.venv/
+__pycache__/
+.pytest_cache/
+*.py[cod]
+build_files/
+*.spec
+
+# App outputs and private photo data
+config.json
+error.log
+source-smoke-*.json
+_Photo Helper/
+Photo Helper/
+*.cache
+*.pkl
+*.compressing
+
+# Third-party binaries and source archives kept locally for packaging
+bin/
+ffmpeg.exe
+ffprobe.exe
+exiftool.exe
+photo_helper.ico
+ffmpeg/
+Exiftool/
+models/
+doc/
+presets/
+files/
+ffmpeg-*.7z
+ffmpeg-*.zip
+
+# Local historical work notes and one-off patch scripts
+AUDIT_TASKS.md
+GITHUB_AUDIT.md
+README.txt
+speedup_patch.py
+tests/README.txt
