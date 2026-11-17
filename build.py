@@ -71,7 +71,7 @@ def get_icon(build):
 
 def main():
     preview = "--preview" in sys.argv[1:]
-    package_name = "NNPS UI Preview" if preview else "No-Nonsense Photo Sorter"
+    package_name = "NNPS Test Build" if preview else "No-Nonsense Photo Sorter"
     build = HERE / "build_files"
     build.mkdir(exist_ok=True)
     ph.MODEL_DIR = build / "models"

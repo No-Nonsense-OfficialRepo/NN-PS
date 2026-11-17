@@ -23,7 +23,7 @@ The face models are downloaded from a pinned OpenCV Zoo revision on first use if
 
 Place the pinned ExifTool 13.60 Windows package in `Exiftool/` and the pinned FFmpeg 2026-10-29 essentials build's `ffmpeg.exe` and `ffprobe.exe` in `bin/`. See [THIRD_PARTY_NOTICES.txt](THIRD_PARTY_NOTICES.txt) for hashes and sources. Run `Build NNPS.bat`. The script installs the pinned direct Python dependencies and runs `build.py`, which creates the portable `../No-Nonsense Photo Sorter` folder and runs packaged smoke checks. A Python installation is required to build, but not to run the packaged app.
 
-To build a separate test copy while the regular app is open, run `python build.py --preview`. It creates `../NNPS UI Preview/NNPS UI Preview.exe` and runs the same packaged checks.
+To build a separate test copy while the regular app is open, run `python build.py --preview`. It creates `../NNPS Test Build/NNPS Test Build.exe` and runs the same packaged checks.
 
 The build script verifies the local tool hashes and the app verifies its pinned model downloads. Bundled binary tools and face models are deliberately excluded from this source repository. Review their licenses and redistribution terms before attaching a portable build to a release.
 
