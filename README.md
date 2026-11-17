@@ -1,6 +1,10 @@
-# No-Nonsense Photo Sorter
+# No-Nonsense Photo Sorter (NNPS)
 
 No-Nonsense Photo Sorter (NNPS) is a Windows desktop app for organizing a local photo and video folder. It can find exact copies and likely look-alikes, sort media by date, detect and name faces, gather photos of selected people, check for damaged pictures, compress videos, and remove saved face names. Review the results and keep a backup of your photo library before running jobs that move or edit files.
+
+## Download a test build
+
+[Download the latest NNPS test build](https://github.com/No-Nonsense-OfficialRepo/NN-PS-Test-Build/releases/tag/v0.7.1-test.1) from the separate test-build repository. Download its attached ZIP, extract it completely, and run `NNPS Test Build.exe` with `bin/` beside it. GitHub's automatically generated source ZIP is not the portable app.
 
 The NNPS title bar can be dragged to move the window or double-clicked to maximize and restore it. Its upper-right gear opens Options in a popup; the other buttons minimize, maximize or restore, and close the app. Drag the lower-right corner to resize.
 
