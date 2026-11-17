@@ -16,6 +16,21 @@ def run(ph, destination):
             ph.CONFIG = root / "config.json"
             app = ph.QApplication.instance() or ph.QApplication([])
             window = ph.Main()
+            assert window.windowFlags() & ph.Qt.FramelessWindowHint
+            assert not ph.QPixmap(str(ph.RES_DIR / "assets" / "nnps_icon.png")).isNull()
+            assert window.options_btn.isEnabled() and window.min_btn.isEnabled()
+            assert window.max_btn.isEnabled() and window.close_btn.isEnabled()
+            window.show()
+            app.processEvents()
+            assert window.stack.widget(0).verticalScrollBar().maximum() == 0
+            assert window.stack.count() == 6
+            window.options_btn.click()
+            app.processEvents()
+            assert window.options_dialog.isVisible() and window.stack.currentIndex() == 0
+            window.options_dialog.close()
+            app.processEvents()
+            assert window.stack.currentIndex() == 0
+            result["checks"].append("frameless NNPS window and Options popup")
             window.face_option_boxes["review_faces"].setChecked(True)
             assert ph.load_config()["options"]["review_faces"] is True
             window.reset_options()

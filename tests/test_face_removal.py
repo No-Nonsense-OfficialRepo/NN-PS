@@ -65,10 +65,18 @@ def test_file_failure_does_not_stop_later_images(ph, tmp_path, monkeypatch):
     annotated(ph, b)
     plan = ph.prepare_face_removal(tmp_path, exe, lambda *_: None)
     real = ph.run_exif
-    def fail_one(exe, args):
-        if args[-1] == str(a):
-            raise RuntimeError("locked image")
-        return real(exe, args)
+    def fail_one(exe, args, **kwargs):
+        if "-execute" in args and str(a) in args:
+            # The editor batches files; simulate ExifTool skipping the first edit.
+            commands, start = [], 0
+            for end, arg in enumerate(args):
+                if arg == "-execute":
+                    command = args[start:end + 1]
+                    if str(a) not in command:
+                        commands.extend(command)
+                    start = end + 1
+            args = commands
+        return real(exe, args, **kwargs)
     monkeypatch.setattr(ph, "run_exif", fail_one)
     result = ph.remove_face_data(plan, exe, lambda *_: None, forget=False)
     assert result["failed"] == 1 and result["removed"] == 1

@@ -5,6 +5,10 @@ All notable changes to No-Nonsense Photo Sorter. Add one line per change under "
 
 ## Unreleased
 
+- Matched NNLL's button hover behavior with a bottom-only fading trace, stronger brass glow, and animated label emphasis; removed the full outline and clipped full-width scaling.
+- Replaced the Sort Photos/Options title-bar tabs with one Options popup; kept the main screen in place and enlarged the title-bar NN logo.
+- Reworked the main layout to match the compact NNLL and NNVLA shell; added shared control icons, fading brass button traces, two-column task selection, and a welcome page that fits at the default size.
+- Matched NNLL and NNVLA with a frameless, draggable NNPS title bar, custom window controls, resize grip, and brass outlined chamfered buttons.
 - Renamed the product to No-Nonsense Photo Sorter (NNPS) and added the supplied marble NN monogram to the app and executable.
 
 - Added GitHub source ignore rules, setup documentation, and pinned direct build dependencies.

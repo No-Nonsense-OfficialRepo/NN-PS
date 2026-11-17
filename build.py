@@ -15,7 +15,7 @@ TOOL_SHA256 = {
 }
 
 
-def make_version_file(build):
+def make_version_file(build, executable_name="No-Nonsense Photo Sorter.exe"):
     """Write the Windows version resource from APP_VERSION so Properties > Details shows it."""
     v = ph.APP_VERSION
     parts = [int(x) for x in v.split(".")[:3]]
@@ -25,9 +25,9 @@ def make_version_file(build):
         f"  ffi=FixedFileInfo(filevers={t}, prodvers={t}, mask=0x3f, flags=0x0, OS=0x40004, fileType=0x1, subtype=0x0, date=(0, 0)),\n"
         "  kids=[StringFileInfo([StringTable('040904B0', [\n"
         "    StringStruct('FileDescription', 'No-Nonsense Photo Sorter'), StringStruct('FileVersion', '%s'),\n"
-        "    StringStruct('InternalName', 'No-Nonsense Photo Sorter'), StringStruct('OriginalFilename', 'No-Nonsense Photo Sorter.exe'),\n"
+        "    StringStruct('InternalName', 'No-Nonsense Photo Sorter'), StringStruct('OriginalFilename', '%s'),\n"
         "    StringStruct('ProductName', 'No-Nonsense Photo Sorter'), StringStruct('ProductVersion', '%s')])]),\n"
-        "    VarFileInfo([VarStruct('Translation', [1033, 1200])])])\n" % (v, v))
+        "    VarFileInfo([VarStruct('Translation', [1033, 1200])])])\n" % (v, executable_name, v))
     f = Path(build) / "version_info.txt"
     f.write_text(text, encoding="utf-8")
     return f
@@ -70,6 +70,8 @@ def get_icon(build):
 
 
 def main():
+    preview = "--preview" in sys.argv[1:]
+    package_name = "NNPS UI Preview" if preview else "No-Nonsense Photo Sorter"
     build = HERE / "build_files"
     build.mkdir(exist_ok=True)
     ph.MODEL_DIR = build / "models"
@@ -94,13 +96,13 @@ def main():
     shutil.copy2(ffmpeg, tools / "ffmpeg.exe")
     shutil.copy2(ffprobe, tools / "ffprobe.exe")
     dist = HERE.parent
-    out = dist / "No-Nonsense Photo Sorter"
+    out = dist / package_name
     if out.resolve() != out.absolute() or not out.resolve().is_relative_to(HERE.parent.resolve()):
         raise RuntimeError("Output must stay inside this workspace without redirects")
     print(f"Building No-Nonsense Photo Sorter {ph.APP_VERSION}...", flush=True)
     subprocess.check_call([sys.executable, "-m", "PyInstaller", "--noconfirm", "--clean", "--windowed",
-                           "--name", "No-Nonsense Photo Sorter", "--contents-directory", "bin", "--icon", str(get_icon(build)),
-                           "--version-file", str(make_version_file(build)),
+                           "--name", package_name, "--contents-directory", "bin", "--icon", str(get_icon(build)),
+                           "--version-file", str(make_version_file(build, package_name + ".exe")),
                            "--add-data", f"{build / 'models'};models", "--add-data", f"{exif};exiftool",
                            "--add-data", f"{tools};ffmpeg", "--add-data", f"{HERE / 'fonts'};fonts",
                            "--add-data", f"{HERE / 'assets'};assets", "--distpath", str(dist),
@@ -118,7 +120,7 @@ def main():
         shutil.copy2(HERE / name, out / name)
     print("Testing the packaged executable...", flush=True)
     report = out / "build-smoke.json"
-    checked = subprocess.run([str(out / "No-Nonsense Photo Sorter.exe"), "--smoke-test", str(report)],
+    checked = subprocess.run([str(out / (package_name + ".exe")), "--smoke-test", str(report)],
                              capture_output=True, timeout=90, creationflags=ph.NO_WINDOW)
     if checked.returncode or not report.exists() or not json.loads(report.read_text())["passed"]:
         raise RuntimeError("Packaged checks failed: " + checked.stderr.decode("utf-8", "replace"))

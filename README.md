@@ -2,6 +2,8 @@
 
 No-Nonsense Photo Sorter (NNPS) is a Windows desktop app for organizing a local photo and video folder. It can find exact copies and likely look-alikes, sort media by date, detect and name faces, gather photos of selected people, check for damaged pictures, compress videos, and remove saved face names. Review the results and keep a backup of your photo library before running jobs that move or edit files.
 
+The NNPS title bar can be dragged to move the window or double-clicked to maximize and restore it. Its upper-right gear opens Options in a popup; the other buttons minimize, maximize or restore, and close the app. Drag the lower-right corner to resize.
+
 ## Run from source
 
 1. Install Python 3.11 on Windows.
@@ -20,6 +22,8 @@ The face models are downloaded from a pinned OpenCV Zoo revision on first use if
 ## Build a portable app
 
 Place the pinned ExifTool 13.60 Windows package in `Exiftool/` and the pinned FFmpeg 2026-10-29 essentials build's `ffmpeg.exe` and `ffprobe.exe` in `bin/`. See [THIRD_PARTY_NOTICES.txt](THIRD_PARTY_NOTICES.txt) for hashes and sources. Run `Build NNPS.bat`. The script installs the pinned direct Python dependencies and runs `build.py`, which creates the portable `../No-Nonsense Photo Sorter` folder and runs packaged smoke checks. A Python installation is required to build, but not to run the packaged app.
+
+To build a separate test copy while the regular app is open, run `python build.py --preview`. It creates `../NNPS UI Preview/NNPS UI Preview.exe` and runs the same packaged checks.
 
 The build script verifies the local tool hashes and the app verifies its pinned model downloads. Bundled binary tools and face models are deliberately excluded from this source repository. Review their licenses and redistribution terms before attaching a portable build to a release.
 

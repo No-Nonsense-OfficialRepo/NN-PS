@@ -14,12 +14,13 @@ from pathlib import Path
 
 import numpy as np
 import cv2
-from PySide6.QtCore import Qt, QThread, Signal, QStringListModel, QTimer, QSize, QUrl, QPoint, QObject, QEvent
-from PySide6.QtGui import QFontDatabase, QPixmap, QImage, QPainter, QPainterPath, QIcon, QDesktopServices, QColor, QPen
+from PySide6.QtCore import Qt, QThread, Signal, QStringListModel, QTimer, QSize, QUrl, QPoint, QObject, QEvent, QByteArray, QRectF, QVariantAnimation, QEasingCurve
+from PySide6.QtGui import QFontDatabase, QPixmap, QImage, QPainter, QPainterPath, QIcon, QDesktopServices, QColor, QPen, QBrush, QLinearGradient, QRadialGradient
+from PySide6.QtSvg import QSvgRenderer
 from PySide6.QtWidgets import (QApplication, QWidget, QVBoxLayout, QHBoxLayout, QLabel, QPushButton,
                                QLineEdit, QProgressBar, QStackedWidget, QFileDialog, QMessageBox,
                                QCompleter, QDialog, QComboBox, QListWidget, QListWidgetItem, QCheckBox,
-                               QFrame, QSpinBox, QScrollArea, QProgressDialog)
+                               QFrame, QSpinBox, QScrollArea, QProgressDialog, QSizeGrip, QGridLayout)
 
 APP_VERSION = "0.7.1"
 APP_NAME = "No-Nonsense Photo Sorter"
@@ -2616,72 +2617,79 @@ def stage_match(data, refs, cluster_names, exe, progress):
 STYLE = """
 QWidget { font-family: "PH Sans", "Segoe UI", Arial; color: #EDE9E1; }
 #root, QDialog, QMessageBox { background: #0A0A0A; }
-#content { background: #121212; }
+#root { border: 1px solid #2A2A2A; }
+#optionsDialog { background: #0A0A0A; border: 1px solid #2A2A2A; }
+#titlebar { background: #0A0A0A; border-bottom: 1px solid #2A2A2A; }
+#chromeTitle { font-family: "PH Heading", "Georgia", serif; font-size: 23px; color: #EDE9E1; }
+#content { background: #0A0A0A; }
+#welcomePage { background: #0A0A0A; }
 #title { font-family: "PH Serif", "Georgia", serif; font-size: 46px; color: #EDE9E1; }
-#welcomeTitle { font-family: "PH Serif", "Georgia", serif; font-size: 36px; color: #EDE9E1; }
+#welcomeTitle { font-family: "PH Heading", "Georgia", serif; font-size: 27px; color: #EDE9E1; }
+#sectionTitle { font-family: "PH Heading", "Georgia", serif; font-size: 16px; color: #B08D57; }
 #subtitle { font-size: 15px; color: #A8A39A; }
 #caption { font-size: 12px; color: #85817B; }
 #version { font-size: 12px; color: #85817B; }
 #status { font-family: "PH Sans Medium", "PH Sans", "Segoe UI"; font-size: 16px; color: #EDE9E1; }
 #hint { font-size: 13px; color: #85817B; }
-#card { background: #181818; border: 1px solid #2A2A2A; border-radius: 14px; }
+#card { background: #181818; border: 1px solid #2A2A2A; border-radius: 3px; }
 #rule { background: #9C7C49; border: none; }
 QMessageBox QLabel { color: #EDE9E1; font-size: 14px; }
-QPushButton { background: #181818; color: #EDE9E1; border: 1px solid #2A2A2A; border-radius: 10px;
+QPushButton { background: #181818; color: #EDE9E1; border: 1px solid #746F67; border-radius: 3px;
               padding: 9px 18px; font-family: "PH Sans Medium", "PH Sans", "Segoe UI"; font-size: 13px; }
-QPushButton:hover { background: #1F1F1F; }
-QPushButton:pressed { background: #101010; }
+QPushButton:hover { background: #24211E; border-color: #B08D57; }
+QPushButton:pressed { background: #1B1712; border-color: #8E6E3B; }
 QPushButton:disabled { color: #6F6A63; }
-QPushButton#primary { background: #B08D57; color: #0A0A0A; border: none; border-radius: 12px;
+QPushButton#primary { background: #1F1F1F; color: #EDE9E1; border: 1px solid #B08D57; border-radius: 3px;
                       padding: 14px 40px; font-family: "PH Sans Semibold", "PH Sans", "Segoe UI"; font-size: 15px; }
-QPushButton#primary:hover { background: #C49A5C; }
-QPushButton#primary:pressed { background: #8E6E3B; }
+QPushButton#primary:hover { background: #29231B; border-color: #C49A5C; }
+QPushButton#primary:pressed { background: #1B1712; border-color: #8E6E3B; }
 QPushButton#primary:disabled { background: #1F1F1F; color: #6F6A63; }
 QPushButton#link { background: transparent; border: none; color: #A8A39A; font-size: 14px; padding: 8px 14px; }
 QPushButton#link:hover { color: #EDE9E1; }
-QPushButton#secondary { background: #181818; color: #EDE9E1; border: 1px solid #2A2A2A; border-radius: 12px;
+QPushButton#secondary { background: #181818; color: #EDE9E1; border: 1px solid #746F67; border-radius: 3px;
                         padding: 13px 28px; font-family: "PH Sans Semibold", "PH Sans", "Segoe UI"; font-size: 14px; }
 QPushButton#secondary:hover { background: #1F1F1F; border: 1px solid #B08D57; }
-QLineEdit { background: #121212; color: #EDE9E1; border: 1px solid #2A2A2A; border-radius: 12px;
+QLineEdit { background: #121212; color: #EDE9E1; border: 1px solid #2A2A2A; border-radius: 3px;
             padding: 12px 16px; font-size: 16px; selection-background-color: #B08D57; selection-color: #0A0A0A; }
 QLineEdit:focus { border: 1px solid #B08D57; }
 QCheckBox { font-size: 15px; spacing: 12px; padding: 0; min-height: 28px; background: transparent; }
 QCheckBox#allbox { font-family: "PH Sans Semibold", "PH Sans", "Segoe UI"; }
-QCheckBox::indicator { width: 18px; height: 18px; border-radius: 5px; background: #121212; border: 1px solid #3A3A3A; }
+QCheckBox::indicator { width: 16px; height: 16px; border-radius: 1px; background: #121212; border: 1px solid #3A3A3A; }
 QCheckBox::indicator:hover { border: 1px solid #9C7C49; }
 QCheckBox::indicator:checked { background: #B08D57; border: 1px solid #B08D57; }
 QCheckBox::indicator:checked:hover { background: #C49A5C; border: 1px solid #C49A5C; }
 QCheckBox::indicator:disabled { background: #101010; border: 1px solid #232323; }
 QCheckBox::indicator:checked:disabled { background: #6B5633; border: 1px solid #6B5633; }
-QListWidget { background: #121212; color: #EDE9E1; border: 1px solid #2A2A2A; border-radius: 12px; font-size: 15px; padding: 6px; }
+QListWidget { background: #121212; color: #EDE9E1; border: 1px solid #2A2A2A; border-radius: 3px; font-size: 15px; padding: 6px; }
 QListWidget#grid { background: transparent; border: none; font-size: 12px; }
-QComboBox { background: #121212; color: #EDE9E1; border: 1px solid #2A2A2A; border-radius: 10px;
+QComboBox { background: #121212; color: #EDE9E1; border: 1px solid #2A2A2A; border-radius: 3px;
             padding: 9px 14px; font-size: 14px; min-width: 300px; }
 QComboBox:hover, QComboBox:focus { border: 1px solid #B08D57; }
 QComboBox#optcombo { min-width: 0px; font-size: 13px; padding: 7px 12px; }
 QComboBox::drop-down { border: none; width: 28px; }
 QComboBox QAbstractItemView { background: #181818; color: #EDE9E1; border: 1px solid #2A2A2A;
                               selection-background-color: #B08D57; selection-color: #0A0A0A; outline: none; font-size: 14px; }
-QSpinBox { background: #121212; color: #EDE9E1; border: 1px solid #2A2A2A; border-radius: 8px;
+QSpinBox { background: #121212; color: #EDE9E1; border: 1px solid #2A2A2A; border-radius: 3px;
            padding: 5px 8px; font-size: 14px; min-width: 56px; }
 QSpinBox:focus { border: 1px solid #B08D57; }
-#optpage { background: #121212; }
-QPushButton#seg { background: transparent; border: 1px solid #2A2A2A; color: #A8A39A; border-radius: 10px;
+#optpage { background: #0A0A0A; }
+QPushButton#seg { background: transparent; border: 1px solid #746F67; color: #A8A39A; border-radius: 3px;
                   padding: 8px 16px; font-family: "PH Sans Medium", "PH Sans", "Segoe UI"; font-size: 13px; }
 QPushButton#seg:hover { color: #EDE9E1; border: 1px solid #3A3A3A; }
 QPushButton#seg:checked { background: #181818; color: #EDE9E1; border: 1px solid #B08D57; }
 #sidebar { background: #101010; border-right: 1px solid #2A2A2A; }
 #brand { font-family: "PH Serif", "Georgia", serif; font-size: 26px; color: #EDE9E1; }
-QPushButton#nav { background: transparent; border: none; color: #A8A39A; text-align: left;
-                  padding: 10px 14px; font-family: "PH Sans Medium", "PH Sans", "Segoe UI"; font-size: 14px; border-radius: 10px; }
+QPushButton#nav { background: transparent; border: none; color: #A8A39A;
+                  padding: 4px 12px; font-family: "PH Sans Medium", "PH Sans", "Segoe UI"; font-size: 13px; border-radius: 3px; }
 QPushButton#nav:hover { background: #1F1F1F; color: #EDE9E1; }
 QPushButton#nav:checked { background: #181818; color: #EDE9E1; border-left: 2px solid #B08D57; }
 QPushButton#nav:disabled { color: #6F6A63; }
 #opttitle { font-family: "PH Heading", "Georgia", serif; font-size: 22px; }
 #opttitle2 { font-family: "PH Heading", "Georgia", serif; font-size: 16px; }
-#optscroll, #optinner { background: #121212; border: none; }
+#optscroll, #optinner { background: #0A0A0A; border: none; }
 #optname { font-family: "PH Sans Semibold", "PH Sans", "Segoe UI"; font-size: 14px; }
 #opthint { font-size: 12px; color: #85817B; }
+#sizeGrip { background: transparent; width: 18px; height: 18px; }
 QProgressBar { background: #1F1F1F; border: none; border-radius: 4px; }
 QProgressBar::chunk { background: #B08D57; border-radius: 4px; }
 QScrollBar:vertical { background: transparent; width: 10px; margin: 0; }
@@ -2815,6 +2823,227 @@ def label(text, name=None, align=Qt.AlignCenter, wrap=True):
     return l
 
 
+class NNButton(QPushButton):
+    """Widget rendering of the shared NNLL/NNVLA GUButton treatment."""
+
+    ICONS = {
+        "sort photos": "grid", "options": "settings", "choose photo folder": "folder-open",
+        "show photos": "image", "copy to folder": "folder-open", "back": "back",
+        "back to the list of people": "back", "save names": "save",
+        "remove names from photos…": "trash", "merge face caches…": "people",
+        "calibrate face matching…": "refresh", "close": "close",
+    }
+
+    def __init__(self, text="", parent=None):
+        super().__init__(text, parent)
+        self.icon_name = self.ICONS.get(text.lower(), "")
+        self.icon_only = False
+        self.hover_amount = 0.0
+        self.hover_animation = QVariantAnimation(self)
+        self.hover_animation.setDuration(150)
+        self.hover_animation.setEasingCurve(QEasingCurve.OutCubic)
+        self.hover_animation.valueChanged.connect(self._set_hover_amount)
+
+    def _set_hover_amount(self, value):
+        self.hover_amount = float(value)
+        self.update()
+
+    def _animate_hover(self, target):
+        self.hover_animation.stop()
+        self.hover_animation.setStartValue(self.hover_amount)
+        self.hover_animation.setEndValue(target)
+        self.hover_animation.start()
+
+    def enterEvent(self, event):
+        super().enterEvent(event)
+        self._animate_hover(1.0)
+
+    def leaveEvent(self, event):
+        super().leaveEvent(event)
+        self._animate_hover(0.0)
+
+    def paintEvent(self, event):
+        if self.objectName() == "link":
+            super().paintEvent(event)
+            return
+        painter = QPainter(self)
+        painter.setRenderHint(QPainter.Antialiasing)
+        if not self.isEnabled():
+            painter.setOpacity(0.5)
+        w, h = self.width(), self.height()
+        hover = self.hover_amount if self.isEnabled() else 0.0
+        bevel = min(9, (w - 6) / 4, (h - 6) / 2)
+        body = QPainterPath()
+        body.moveTo(2, 2)
+        body.lineTo(w - 2, 2)
+        body.lineTo(w - 2, h - 13)
+        body.lineTo(w - 13, h - 2)
+        body.lineTo(14, h - 2)
+        body.quadTo(9, h - 2, 6, h - 6)
+        body.lineTo(2, h - 12)
+        body.closeSubpath()
+        edge = QPainterPath()
+        edge.moveTo(3, h - 3 - bevel)
+        edge.lineTo(3 + bevel, h - 3)
+        edge.lineTo(w - 3 - bevel, h - 3)
+        edge.lineTo(w - 3, h - 3 - bevel)
+        selected = self.isChecked()
+        lit = selected or self.isDown() or hover > 0 or self.hasFocus() or self.objectName() == "primary"
+        ink = QColor("#C49A5C") if selected or self.isDown() else QColor("#B08D57") if lit else QColor("#EDE9E1")
+        fill = QLinearGradient(0, 0, 0, h)
+        for i in range(9):
+            t = i / 8
+            source = QColor("#8E6E3B") if self.isDown() else QColor("#EDE9E1")
+            source.setAlpha(round((.15 if self.isDown() else .07) * 255 * t * t))
+            fill.setColorAt(t, source)
+        painter.fillPath(body, fill)
+        cloud = QRadialGradient(w * .28, h * .8, w * .8)
+        cloud.setColorAt(0, QColor(176, 141, 87, 18))
+        cloud.setColorAt(.35, QColor(237, 233, 225, 6))
+        cloud.setColorAt(1, QColor(176, 141, 87, 0))
+        painter.fillPath(body, cloud)
+        trace = QLinearGradient(0, h, w, h)
+        for i in range(17):
+            t = i / 16
+            tone = QColor(ink)
+            tone.setAlpha(round((1 - abs(2 * t - 1) ** 3) * (255 if lit else 128)))
+            trace.setColorAt(t, tone)
+        painter.setBrush(Qt.NoBrush)
+        painter.save()
+        painter.translate(0, 3)
+        painter.setPen(QPen(QColor(0, 0, 0, 64), 2))
+        painter.drawPath(edge)
+        painter.restore()
+        if lit:
+            painter.setPen(QPen(QBrush(trace), 9))
+            painter.setOpacity(.09 + .20 * hover)
+            painter.drawPath(edge)
+            painter.setPen(QPen(QBrush(trace), 5))
+            painter.setOpacity(.16 + .30 * hover)
+            painter.drawPath(edge)
+            painter.setOpacity(1 if self.isEnabled() else .5)
+        painter.setPen(QPen(QBrush(trace), 1.1 if not self.hasFocus() else 1.8))
+        painter.drawPath(edge)
+        icon = self.icon_name
+        if icon:
+            source = RES_DIR / "assets" / "controls" / f"{icon}.svg"
+            if source.is_file():
+                svg = source.read_bytes().replace(b"#535D66", b"#C49A5C" if selected else b"#EDE9E1")
+                renderer = QSvgRenderer(QByteArray(svg))
+                if renderer.isValid():
+                    size = 18 if self.icon_only else 16
+                    x = (w - size) / 2 if self.icon_only else 8
+                    if self.icon_only:
+                        painter.save()
+                        painter.translate(w / 2, h / 2)
+                        painter.scale(1 + .05 * hover, 1 + .05 * hover)
+                        painter.translate(-w / 2, -h / 2)
+                    renderer.render(painter, QRectF(x, (h - size) / 2, size, size))
+                    if self.icon_only:
+                        painter.restore()
+        if self.icon_only:
+            return
+        font = self.font()
+        font.setBold(True)
+        painter.setFont(font)
+        painter.setPen(QColor("#C49A5C") if selected else QColor("#EDE9E1"))
+        rect = self.rect().adjusted(28 if icon else 0, 2, 0, -2)
+        painter.translate(w / 2, h / 2)
+        painter.scale(1 + .05 * hover, 1 + .05 * hover)
+        painter.translate(-w / 2, -h / 2)
+        painter.drawText(rect, Qt.AlignVCenter | Qt.AlignCenter, self.text())
+
+
+class TitleBar(QFrame):
+    """A draggable title strip for the frameless main window."""
+
+    def __init__(self, parent=None):
+        super().__init__(parent)
+        self._drag_offset = None
+
+    def mousePressEvent(self, event):
+        if event.button() == Qt.LeftButton:
+            handle = self.window().windowHandle()
+            if handle and handle.startSystemMove():
+                return
+            self._drag_offset = event.globalPosition().toPoint() - self.window().frameGeometry().topLeft()
+        super().mousePressEvent(event)
+
+    def mouseMoveEvent(self, event):
+        if self._drag_offset is not None and event.buttons() & Qt.LeftButton:
+            self.window().move(event.globalPosition().toPoint() - self._drag_offset)
+        super().mouseMoveEvent(event)
+
+    def mouseReleaseEvent(self, event):
+        self._drag_offset = None
+        super().mouseReleaseEvent(event)
+
+    def mouseDoubleClickEvent(self, event):
+        if event.button() == Qt.LeftButton and hasattr(self.window(), "toggle_maximize"):
+            self.window().toggle_maximize()
+        super().mouseDoubleClickEvent(event)
+
+
+class NNSizeGrip(QSizeGrip):
+    """Visible brass resize affordance for the frameless window."""
+
+    def paintEvent(self, event):
+        painter = QPainter(self)
+        painter.setRenderHint(QPainter.Antialiasing)
+        painter.setPen(QPen(QColor("#8E6E3B"), 1.5))
+        for offset in (4, 8, 12):
+            painter.drawLine(self.width() - offset, self.height() - 2,
+                             self.width() - 2, self.height() - offset)
+
+
+class OptionsDialog(QDialog):
+    """Frameless options popup that leaves the main workflow in place."""
+
+    def __init__(self, parent, panel):
+        super().__init__(parent)
+        self.setObjectName("optionsDialog")
+        self.setWindowTitle(f"{APP_NAME} Options")
+        self.setWindowIcon(app_icon())
+        self.setWindowFlags(Qt.Dialog | Qt.FramelessWindowHint)
+        self.setModal(True)
+        self.resize(760, 600)
+        self.setMinimumSize(640, 470)
+        shell = QVBoxLayout(self)
+        shell.setContentsMargins(0, 0, 0, 0)
+        shell.setSpacing(0)
+        title_bar = TitleBar(self)
+        title_bar.setObjectName("titlebar")
+        title_bar.setFixedHeight(42)
+        chrome = QHBoxLayout(title_bar)
+        chrome.setContentsMargins(12, 4, 8, 4)
+        mark = QLabel()
+        mark.setPixmap(QPixmap(str(RES_DIR / "assets" / "nnps_icon.png")).scaled(
+            28, 28, Qt.KeepAspectRatio, Qt.SmoothTransformation))
+        mark.setAttribute(Qt.WA_TransparentForMouseEvents)
+        chrome.addWidget(mark)
+        heading = label("Options", "chromeTitle", Qt.AlignLeft)
+        heading.setAttribute(Qt.WA_TransparentForMouseEvents)
+        chrome.addWidget(heading, 1)
+        close_btn = NNButton("×")
+        close_btn.setObjectName("windowControl")
+        close_btn.icon_name = "close"
+        close_btn.icon_only = True
+        close_btn.setFixedSize(36, 28)
+        close_btn.setAccessibleName("Close Options")
+        close_btn.setToolTip("Close Options")
+        close_btn.clicked.connect(self.close)
+        chrome.addWidget(close_btn)
+        shell.addWidget(title_bar)
+        shell.addWidget(panel, 1)
+        grip_row = QHBoxLayout()
+        grip_row.setContentsMargins(0, 0, 4, 4)
+        grip_row.addStretch(1)
+        grip = NNSizeGrip(self)
+        grip.setFixedSize(18, 18)
+        grip_row.addWidget(grip)
+        shell.addLayout(grip_row)
+
+
 def keep_awake(on):
     """Stop Windows going to sleep by itself while No-Nonsense Photo Sorter is busy."""
     if sys.platform != "win32":
@@ -2884,11 +3113,12 @@ SHUTDOWN_REASON = "No-Nonsense Photo Sorter is still working on your photos. Clo
 class Main(QWidget):
     def __init__(self):
         super().__init__()
+        self.setWindowFlags(Qt.Window | Qt.FramelessWindowHint)
         self.setObjectName("root")
         self.setWindowTitle(f"{APP_NAME} v{APP_VERSION}")
         self.setWindowIcon(app_icon())
-        self.resize(820, 720)
-        self.setMinimumSize(720, 620)
+        self.resize(840, 680)
+        self.setMinimumSize(720, 580)
         apply_options(load_config().get("options"))
         self.exe = None
         self.root_folder = None
@@ -2904,18 +3134,71 @@ class Main(QWidget):
         self.heartbeat.timeout.connect(lambda: self.status and self.phase in BUSY and self.status.write())
         self.heartbeat.start(20000)
         self.stack = QStackedWidget()
-        outer = QHBoxLayout(self)
-        outer.setContentsMargins(0, 0, 0, 0)
-        outer.setSpacing(0)
+        shell = QVBoxLayout(self)
+        shell.setContentsMargins(0, 0, 0, 0)
+        shell.setSpacing(0)
+        self.title_bar = TitleBar(self)
+        self.title_bar.setObjectName("titlebar")
+        self.title_bar.setFixedHeight(44)
+        chrome = QHBoxLayout(self.title_bar)
+        chrome.setContentsMargins(12, 4, 8, 4)
+        chrome.setSpacing(6)
+        chrome_logo = QLabel()
+        chrome_logo.setPixmap(QPixmap(str(RES_DIR / "assets" / "nnps_icon.png")).scaled(
+            32, 32, Qt.KeepAspectRatio, Qt.SmoothTransformation))
+        chrome_logo.setAttribute(Qt.WA_TransparentForMouseEvents)
+        chrome.addWidget(chrome_logo)
+        chrome.addStretch(1)
+        self.options_btn = NNButton("Options")
+        self.options_btn.setObjectName("windowControl")
+        self.options_btn.icon_only = True
+        self.options_btn.setFixedSize(34, 28)
+        self.options_btn.setAccessibleName("Options")
+        self.options_btn.setToolTip("Options")
+        self.options_btn.clicked.connect(self.show_options)
+        chrome.addWidget(self.options_btn)
+        self.min_btn = NNButton("—")
+        self.min_btn.setObjectName("windowControl")
+        self.min_btn.icon_name = "minimize"
+        self.min_btn.icon_only = True
+        self.min_btn.setFixedSize(34, 28)
+        self.min_btn.setAccessibleName("Minimize window")
+        self.min_btn.setToolTip("Minimize")
+        self.min_btn.clicked.connect(self.showMinimized)
+        chrome.addWidget(self.min_btn)
+        self.max_btn = NNButton("□")
+        self.max_btn.setObjectName("windowControl")
+        self.max_btn.icon_name = "window-expand"
+        self.max_btn.icon_only = True
+        self.max_btn.setFixedSize(34, 28)
+        self.max_btn.setAccessibleName("Maximize window")
+        self.max_btn.setToolTip("Maximize")
+        self.max_btn.clicked.connect(self.toggle_maximize)
+        chrome.addWidget(self.max_btn)
+        self.close_btn = NNButton("×")
+        self.close_btn.setObjectName("windowControl")
+        self.close_btn.icon_name = "close"
+        self.close_btn.icon_only = True
+        self.close_btn.setFixedSize(36, 28)
+        self.close_btn.setAccessibleName("Close application")
+        self.close_btn.setToolTip("Close")
+        self.close_btn.clicked.connect(self.close)
+        chrome.addWidget(self.close_btn)
+        shell.addWidget(self.title_bar)
         left = QWidget()
         left.setObjectName("content")
         lay = QVBoxLayout(left)
-        lay.setContentsMargins(32, 24, 32, 24)
+        lay.setContentsMargins(30, 18, 30, 12)
         lay.addWidget(self.stack)
-        self.build_nav()
-        outer.addWidget(self.sidebar)
-        outer.addWidget(left, 1)
-        self.opt_open = False
+        shell.addWidget(left, 1)
+        grip_row = QHBoxLayout()
+        grip_row.setContentsMargins(0, 0, 4, 4)
+        grip_row.addStretch(1)
+        self.resize_grip = NNSizeGrip(self)
+        self.resize_grip.setObjectName("sizeGrip")
+        self.resize_grip.setFixedSize(18, 18)
+        grip_row.addWidget(self.resize_grip)
+        shell.addLayout(grip_row)
         self.build_welcome()
         self.build_work()
         self.build_naming()
@@ -2923,63 +3206,57 @@ class Main(QWidget):
         self.build_people()
         self.build_results()
         self.build_options()
-        self.stack.addWidget(self.opt_panel)
+        self.options_dialog = OptionsDialog(self, self.opt_panel)
         for _b in self.opt_panel.findChildren(QPushButton):      # section tabs: never narrower than their text
             if _b.objectName() == "seg":
                 _b.ensurePolished()
                 _b.setMinimumWidth(_b.sizeHint().width())
-        self.stack.currentChanged.connect(lambda *_: self.sync_options())
         self.thumb, self.thumb_token = None, 0
         self.show_last_run()
 
-    def build_nav(self):
-        n = QFrame()
-        n.setObjectName("sidebar")
-        n.setFixedWidth(204)
-        nv = QVBoxLayout(n)
-        nv.setContentsMargins(18, 30, 18, 22)
-        nv.setSpacing(4)
-        brand = QHBoxLayout()
-        mark = QLabel()
-        mark.setPixmap(QPixmap(str(RES_DIR / "assets" / "nnps_icon.png")).scaled(
-            48, 48, Qt.KeepAspectRatio, Qt.SmoothTransformation))
-        brand.addWidget(mark)
-        brand.addWidget(label(APP_SHORT_NAME, "brand", Qt.AlignLeft))
-        brand.addStretch(1)
-        nv.addLayout(brand)
-        nv.addSpacing(24)
-        self.nav_home = QPushButton("Sort photos")
-        self.nav_opts = QPushButton("Options")
-        for b, idx in ((self.nav_home, 0), (self.nav_opts, 6)):
-            b.setObjectName("nav")
-            b.setCheckable(True)
-            b.setCursor(Qt.PointingHandCursor)
-            b.clicked.connect(lambda _=False, i=idx: self.nav_to(i))
-            nv.addWidget(b)
-        nv.addStretch(1)
-        nv.addWidget(label(f"Version {APP_VERSION}", "version", Qt.AlignLeft))
-        self.sidebar = n
+    def show_options(self):
+        if self.phase in BUSY:
+            return
+        dialog = self.options_dialog
+        screen = self.screen().availableGeometry()
+        dialog.resize(min(760, screen.width() - 32), min(600, screen.height() - 32))
+        dialog.move(max(screen.left(), min(self.x() + (self.width() - dialog.width()) // 2,
+                                         screen.right() - dialog.width())),
+                    max(screen.top(), min(self.y() + (self.height() - dialog.height()) // 2,
+                                        screen.bottom() - dialog.height())))
+        dialog.open()
+
+    def toggle_maximize(self):
+        if self.isMaximized():
+            self.showNormal()
+        else:
+            self.showMaximized()
+
+    def changeEvent(self, event):
+        super().changeEvent(event)
+        if event.type() == QEvent.WindowStateChange and hasattr(self, "max_btn"):
+            maximized = self.isMaximized()
+            self.max_btn.setText("❐" if maximized else "□")
+            self.max_btn.icon_name = "window-restore" if maximized else "window-expand"
+            self.max_btn.setToolTip("Restore" if maximized else "Maximize")
+            self.max_btn.setAccessibleName("Restore window" if maximized else "Maximize window")
+            if hasattr(self, "resize_grip"):
+                self.resize_grip.setVisible(not maximized)
 
     # ---- pages
     def build_welcome(self):
         pg = QWidget()
+        pg.setObjectName("welcomePage")
         v = QVBoxLayout(pg)
-        v.addStretch(2)
-        mark = QLabel()
-        mark.setPixmap(QPixmap(str(RES_DIR / "assets" / "nnps_icon.png")).scaled(
-            96, 96, Qt.KeepAspectRatio, Qt.SmoothTransformation))
-        v.addWidget(mark, alignment=Qt.AlignCenter)
-        v.addWidget(label("No-Nonsense\nPhoto Sorter", "welcomeTitle"))
+        v.setContentsMargins(4, 4, 4, 4)
+        v.setSpacing(8)
+        v.addWidget(label("NO-NONSENSE PHOTO SORTER", "sectionTitle", Qt.AlignLeft))
+        v.addWidget(label("Sort photos", "welcomeTitle", Qt.AlignLeft))
+        v.addWidget(label("Choose the work to run on your photo folder.", "subtitle", Qt.AlignLeft))
         rule = QFrame()
         rule.setObjectName("rule")
-        rule.setFixedSize(64, 1)
-        v.addSpacing(6)
-        v.addWidget(rule, alignment=Qt.AlignCenter)
-        v.addSpacing(8)
-        v.addWidget(label("Tidy your photos and videos, set aside copies,\nand add the names of the people in them.", "subtitle"))
-        v.addSpacing(14)
-        v.addWidget(label("What should I do?", "caption"))
-        v.addSpacing(2)
+        rule.setFixedHeight(1)
+        v.addWidget(rule)
         saved = load_config().get("tasks")
         if not saved:
             saved = OLD_MODES.get(load_config().get("mode"), list(COMBINABLE))
@@ -2987,14 +3264,20 @@ class Main(QWidget):
         box_holder = QFrame()
         box_holder.setObjectName("card")
         bv = QVBoxLayout(box_holder)
-        bv.setContentsMargins(26, 10, 26, 10)
-        bv.setSpacing(2)
+        bv.setContentsMargins(22, 14, 22, 14)
+        bv.setSpacing(8)
+        bv.addWidget(label("SELECT TASKS", "sectionTitle", Qt.AlignLeft))
         self.all_box = QCheckBox("Everything (copies, sort, names)")
         self.all_box.setObjectName("allbox")
         self.all_box.setToolTip("Ticks Find copies, Sort by date and Name faces together.")
         self.all_box.setFixedHeight(28)
         self.all_box.toggled.connect(lambda on: self.on_task_toggled("all", on))
         bv.addWidget(self.all_box)
+        tasks_grid = QGridLayout()
+        tasks_grid.setHorizontalSpacing(24)
+        tasks_grid.setVerticalSpacing(4)
+        tasks_grid.addWidget(label("CORE", "caption", Qt.AlignLeft), 0, 0)
+        tasks_grid.addWidget(label("ADDITIONAL", "caption", Qt.AlignLeft), 0, 1)
         self.task_boxes = {}
         for key, text, hint in TASKS:
             cb = QCheckBox(text)
@@ -3002,46 +3285,49 @@ class Main(QWidget):
             cb.setFixedHeight(28)
             cb.toggled.connect(lambda on, k=key: self.on_task_toggled(k, on))
             self.task_boxes[key] = cb
-            bv.addWidget(cb)
-            if key == COMBINABLE[-1]:
-                bv.addSpacing(6)             # small gap before the stand-alone jobs
-        v.addWidget(box_holder, alignment=Qt.AlignCenter)
+            if key in COMBINABLE:
+                tasks_grid.addWidget(cb, COMBINABLE.index(key) + 1, 0)
+            else:
+                tasks_grid.addWidget(cb, STANDALONE.index(key) + 1, 1)
+        tasks_grid.setColumnStretch(0, 1)
+        tasks_grid.setColumnStretch(1, 1)
+        bv.addLayout(tasks_grid)
+        v.addWidget(box_holder)
         self._ticking = True
         for k, cb in self.task_boxes.items():
             cb.setChecked(k in saved)
         self.all_box.setChecked(all(self.task_boxes[k].isChecked() for k in COMBINABLE))
         self._ticking = False
-        v.addSpacing(4)
         self.mode_hint = label("", "hint")
-        self.mode_hint.setMinimumHeight(34)            # room for two lines so the page never jumps
-        self.mode_hint.setAlignment(Qt.AlignHCenter | Qt.AlignTop)
+        self.mode_hint.setMinimumHeight(28)
+        self.mode_hint.setAlignment(Qt.AlignLeft | Qt.AlignVCenter)
         v.addWidget(self.mode_hint)
-        v.addSpacing(10)
-        b = QPushButton("Choose Photo Folder")
+        b = NNButton("Choose Photo Folder")
         b.setObjectName("primary")
+        b.setMinimumHeight(45)
         b.setCursor(Qt.PointingHandCursor)
         b.clicked.connect(self.choose_folder)
         self.choose_btn = b
-        v.addWidget(b, alignment=Qt.AlignCenter)
-        self.undo_btn = QPushButton("Undo last recorded moves")
+        v.addWidget(b)
+        self.undo_btn = NNButton("Undo last recorded moves")
         self.undo_btn.setObjectName("link")
         self.undo_btn.clicked.connect(self.undo_moves)
-        v.addWidget(self.undo_btn, alignment=Qt.AlignCenter)
+        v.addWidget(self.undo_btn, alignment=Qt.AlignLeft)
         self.update_task_hint()
-        v.addSpacing(6)
         self.last_note = label("", "hint")
         v.addWidget(self.last_note)
-        v.addStretch(3)
-        v.addWidget(label("Copies are moved to _Duplicates. Back up your photos before editing metadata.", "caption"))
-        v.addSpacing(6)
-        v.addWidget(label(f"Version {APP_VERSION}", "version"))
-        sa = QScrollArea()                             # short window: scroll instead of squashing the rows
+        v.addStretch(1)
+        footer = QHBoxLayout()
+        footer.addWidget(label("Copies are moved to _Duplicates. Back up photos before editing metadata.", "caption", Qt.AlignLeft), 1)
+        footer.addWidget(label(f"V{APP_VERSION}", "version", Qt.AlignRight))
+        v.addLayout(footer)
+        sa = QScrollArea()
         sa.setWidgetResizable(True)
         sa.setFrameShape(QFrame.NoFrame)
         sa.setHorizontalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
-        sa.setStyleSheet("QScrollArea { background: transparent; border: none; }")
+        sa.setStyleSheet("QScrollArea { background: #0A0A0A; border: none; }")
         sa.viewport().setObjectName("welcomevp")
-        sa.viewport().setStyleSheet("#welcomevp { background: #121212; }")
+        sa.viewport().setStyleSheet("#welcomevp { background: #0A0A0A; }")
         sa.setWidget(pg)
         self.stack.addWidget(sa)
 
@@ -3089,7 +3375,7 @@ class Main(QWidget):
         self.name_hint = label("", "hint")
         v.addWidget(self.name_hint)
         v.addSpacing(12)
-        self.next_btn = QPushButton("Next")
+        self.next_btn = NNButton("Next")
         self.next_btn.setObjectName("primary")
         self.next_btn.setCursor(Qt.PointingHandCursor)
         self.next_btn.setEnabled(False)
@@ -3100,7 +3386,7 @@ class Main(QWidget):
         row.addStretch()
         for text, fn in (("Skip this picture", self.skip_picture), ("Skip this person", self.skip_person),
                          ("Skip all", self.skip_all)):
-            b = QPushButton(text)
+            b = NNButton(text)
             b.setObjectName("link")
             b.setCursor(Qt.PointingHandCursor)
             b.clicked.connect(fn)
@@ -3146,12 +3432,12 @@ class Main(QWidget):
         self.only_box = QCheckBox("Only photos where nobody else is in it")
         v.addWidget(self.only_box, alignment=Qt.AlignCenter)
         v.addSpacing(14)
-        b = QPushButton("Show photos")
+        b = NNButton("Show photos")
         b.setObjectName("primary")
         b.setCursor(Qt.PointingHandCursor)
         b.clicked.connect(self.show_people_photos)
         v.addWidget(b, alignment=Qt.AlignCenter)
-        back = QPushButton("Back")
+        back = NNButton("Back")
         back.setObjectName("link")
         back.setCursor(Qt.PointingHandCursor)
         back.clicked.connect(self.go_home)
@@ -3186,14 +3472,14 @@ class Main(QWidget):
         v.addSpacing(6)
         row = QHBoxLayout()
         row.addStretch()
-        cp = QPushButton("Copy to folder")
+        cp = NNButton("Copy to folder")
         cp.setObjectName("primary")
         cp.setCursor(Qt.PointingHandCursor)
         cp.clicked.connect(self.file_matches)
         row.addWidget(cp)
         row.addStretch()
         v.addLayout(row)
-        back = QPushButton("Back to the list of people")
+        back = NNButton("Back to the list of people")
         back.setObjectName("link")
         back.setCursor(Qt.PointingHandCursor)
         back.clicked.connect(lambda: self.stack.setCurrentIndex(4))
@@ -3357,16 +3643,16 @@ class Main(QWidget):
         p.setObjectName("optpage")
         self.opt_panel = p
         pl = QVBoxLayout(p)
-        pl.setContentsMargins(40, 30, 40, 24)
+        pl.setContentsMargins(20, 18, 20, 10)
         pl.setSpacing(0)
-        pl.addWidget(label("Options", "opttitle", Qt.AlignLeft))
-        pl.addSpacing(16)
+        pl.addWidget(label("PREFERENCES", "sectionTitle", Qt.AlignLeft))
+        pl.addSpacing(14)
         seg = QHBoxLayout()
         seg.setSpacing(8)
         self.opt_tabs = []
         self.opt_stack = QStackedWidget()
         for i, title in enumerate(("Sorting Options", "Face/Name Options", "Video Options")):
-            tb = QPushButton(title)
+            tb = NNButton(title)
             tb.setObjectName("seg")
             tb.setCheckable(True)
             tb.setCursor(Qt.PointingHandCursor)
@@ -3380,7 +3666,7 @@ class Main(QWidget):
         pl.addSpacing(18)
         pl.addWidget(self.opt_stack, 1)
         pl.addSpacing(12)
-        rb = QPushButton("Reset options")
+        rb = NNButton("Reset options")
         rb.setObjectName("link")
         rb.setCursor(Qt.PointingHandCursor)
         rb.clicked.connect(self.reset_options)
@@ -3393,7 +3679,7 @@ class Main(QWidget):
             sc.setWidgetResizable(True)
             sc.setFrameShape(QFrame.NoFrame)
             sc.setHorizontalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
-            sc.viewport().setStyleSheet("background: #121212;")
+            sc.viewport().setStyleSheet("background: #0A0A0A;")
             inner = QWidget()
             inner.setObjectName("optinner")
             sc.setWidget(inner)
@@ -3465,10 +3751,10 @@ class Main(QWidget):
             cb.toggled.connect(self.options_changed)
             self.face_option_boxes[key] = cb
             v.addWidget(cb)
-        calibrate = QPushButton("Calibrate face matching…")
+        calibrate = NNButton("Calibrate face matching…")
         calibrate.clicked.connect(self.calibrate_faces)
         v.addWidget(calibrate)
-        wipe = QPushButton("Remove names from photos…")
+        wipe = NNButton("Remove names from photos…")
         wipe.clicked.connect(self.choose_face_removal)
         v.addWidget(wipe)
         v.addSpacing(22)
@@ -3476,7 +3762,7 @@ class Main(QWidget):
         v.addWidget(label("Ran No-Nonsense Photo Sorter in several folders and then joined the folders? Join their remembered "
                           "faces too, so nothing is looked at twice.", "opthint", Qt.AlignLeft))
         v.addSpacing(6)
-        mb = QPushButton("Merge face caches…")
+        mb = NNButton("Merge face caches…")
         mb.setObjectName("secondary")
         mb.setCursor(Qt.PointingHandCursor)
         mb.clicked.connect(self.merge_caches)
@@ -3589,24 +3875,6 @@ class Main(QWidget):
         for w in widgets:
             w.blockSignals(False)
         self.options_changed()
-
-    def toggle_options(self):
-        self.opt_open = not self.opt_open
-        self.sync_options()
-
-    def sync_options(self):
-        """Keeps the sidebar's highlighted button in step with the page on screen."""
-        idx = self.stack.currentIndex()
-        self.nav_home.setChecked(idx == 0)
-        self.nav_opts.setChecked(idx == 6)
-
-    def nav_to(self, index):
-        if self.phase in BUSY:
-            return
-        if index == 0:
-            self.go_home()
-        else:
-            self.stack.setCurrentIndex(index)
 
     def selected_tasks(self):
         return [k for k, _, _ in TASKS if self.task_boxes[k].isChecked()]
@@ -3750,8 +4018,7 @@ class Main(QWidget):
     def set_phase(self, phase):
         self.phase = phase
         busy = phase in BUSY
-        self.nav_home.setEnabled(not busy)
-        self.nav_opts.setEnabled(not busy)
+        self.options_btn.setEnabled(not busy)
         keep_awake(busy and OPTS["keep_awake"])
         shutdown_note(self.hwnd(), SHUTDOWN_REASON if busy else None)
         if self.status and busy:
@@ -4026,9 +4293,9 @@ class Main(QWidget):
             row.addWidget(combo, 1)
             layout.addLayout(row)
         buttons = QHBoxLayout()
-        save = QPushButton("Save names")
-        leave = QPushButton("Leave this photo unnamed")
-        stop = QPushButton("Skip remaining")
+        save = NNButton("Save names")
+        leave = NNButton("Leave this photo unnamed")
+        stop = NNButton("Skip remaining")
         buttons.addWidget(save); buttons.addWidget(leave); buttons.addWidget(stop)
         layout.addLayout(buttons)
         chosen = {}
@@ -4212,7 +4479,7 @@ class Main(QWidget):
         v.addSpacing(8)
         v.addWidget(label(text, "subtitle"))
         v.addSpacing(20)
-        b = QPushButton("Close")
+        b = NNButton("Close")
         b.setObjectName("primary")
         b.clicked.connect(dlg.accept)
         v.addWidget(b, alignment=Qt.AlignCenter)
@@ -4286,18 +4553,18 @@ def tick_css():
         qp.setPen(pen)
         qp.drawPolyline([QPoint(18, 38), QPoint(31, 51), QPoint(54, 21)])
         qp.end()
-        pm = big.scaled(18, 18, Qt.IgnoreAspectRatio, Qt.SmoothTransformation)   # exactly the indicator size
+        pm = big.scaled(16, 16, Qt.IgnoreAspectRatio, Qt.SmoothTransformation)
         pm.save(str(f), "PNG")
-        return ("QCheckBox::indicator:checked { image: url(%s); width: 18px; height: 18px; }\n"
-                "QCheckBox::indicator:checked:disabled { image: url(%s); width: 18px; height: 18px; }\n" % (f.as_posix(), f.as_posix()))
+        return ("QCheckBox::indicator:checked { image: url(%s); width: 16px; height: 16px; }\n"
+                "QCheckBox::indicator:checked:disabled { image: url(%s); width: 16px; height: 16px; }\n" % (f.as_posix(), f.as_posix()))
     except Exception:
         return ""
 
 
 def main():
-    if sys.platform == "win32":                 # lets Windows show our camera in the taskbar, not Python's icon
+    if sys.platform == "win32":                 # show the NNPS icon in the taskbar instead of Python's icon
         try:
-            ctypes.windll.shell32.SetCurrentProcessExplicitAppUserModelID("PhotoHelper.App")
+            ctypes.windll.shell32.SetCurrentProcessExplicitAppUserModelID("NoNonsense.NNPS")
         except Exception:
             pass
     app = QApplication(sys.argv)

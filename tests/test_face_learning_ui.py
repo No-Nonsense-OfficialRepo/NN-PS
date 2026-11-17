@@ -30,7 +30,16 @@ def window(ph, tmp_path, monkeypatch):
 
 @pytest.mark.parametrize("decision", [1, 2, 0])
 def test_review_accept_reject_and_skip(ph, window, tmp_path, monkeypatch, decision):
-    monkeypatch.setattr(ph.QDialog, "exec", lambda _: decision)
+    def respond(dialog):
+        if decision == 1:
+            combo = dialog.findChild(ph.QComboBox)
+            combo.setCurrentText("Alice")
+            save = next(button for button in dialog.findChildren(ph.QPushButton)
+                        if button.text() == "Save names")
+            save.click()
+        return decision
+
+    monkeypatch.setattr(ph.QDialog, "exec", respond)
     window.review_uncertain_faces()
     if decision == 1:
         assert window.data["confirmed"] == {0: "Alice"}

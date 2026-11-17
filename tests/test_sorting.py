@@ -1,5 +1,3 @@
-import subprocess
-
 import pytest
 
 
@@ -17,7 +15,7 @@ def test_invalid_primary_date_uses_valid_secondary(ph, tmp_path, monkeypatch):
 def test_metadata_error_stops_before_moving(ph, tmp_path, monkeypatch):
     p = tmp_path / "a.jpg"
     p.write_bytes(b"a")
-    monkeypatch.setattr(ph, "run_exif", lambda *a: "not JSON")
+    monkeypatch.setattr(ph, "run_exif", lambda *a, **k: "not JSON")
     with pytest.raises(RuntimeError, match="Metadata"):
         ph.sort_files([p], None, tmp_path, lambda *_: None, 0, 1)
     assert p.exists()
@@ -25,7 +23,16 @@ def test_metadata_error_stops_before_moving(ph, tmp_path, monkeypatch):
 
 
 def test_exiftool_exit_failure_is_reported(ph, monkeypatch):
-    monkeypatch.setattr(ph.subprocess, "run", lambda *a, **k: subprocess.CompletedProcess([], 1, b"", b"failed"))
+    class FailedProcess:
+        returncode = 1
+
+        def communicate(self, timeout=None):
+            return b"", b"failed"
+
+        def poll(self):
+            return self.returncode
+
+    monkeypatch.setattr(ph.subprocess, "Popen", lambda *a, **k: FailedProcess())
     with pytest.raises(RuntimeError, match="ExifTool"):
         ph.run_exif("exiftool.exe", [])
 
